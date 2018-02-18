@@ -1,0 +1,23 @@
+{
+  "name": "serverless-to-ecs-demo",
+  "version": "1.0.0",
+  "description": "Demonstration of Serverless to ECS:",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/novemberde/serverless-to-ecs-demo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/novemberde/serverless-to-ecs-demo/issues"
+  },
+  "homepage": "https://github.com/novemberde/serverless-to-ecs-demo#readme",
+  "devDependencies": {
+    "serverless": "^1.26.0"
+  }
+}
