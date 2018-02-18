@@ -1,0 +1,8 @@
+# Dockerfile에서 실행하기 위한 파일.
+apps:
+  - script   : 'main.js'
+    name     : 'WebApp'
+    exec_mode: 'cluster'
+    instances: 2
+    max_restarts : 10
+    min_uptime: "10s"
