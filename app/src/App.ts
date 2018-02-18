@@ -12,8 +12,8 @@ export default class App {
     });
 
     this.app.get('/test', (req: express.Request, res: express.Response, next: express.NextFunction) => {
-      throw new Error('hi');
-      // res.send('TEST');
+      // throw new Error('hi');
+      res.send('TEST');
     });
   }
 }
