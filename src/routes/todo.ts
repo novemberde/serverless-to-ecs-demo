@@ -1,5 +1,5 @@
 import * as express from 'express';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 const router = express.Router();
 let todos = [{
