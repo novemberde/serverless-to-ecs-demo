@@ -1,73 +1,63 @@
 version: 2
 jobs:
-  test: 
+  build:
     docker:
       - image: novemberde/node-awscli
     working_directory: ~/repo
     steps:
-      - checkout
-      - run: npm install
-      - run: npm test
-  build:
-    # docker:
-    #   - image: novemberde/node-awscli
-    docker:
-      - image: docker:17.05.0-ce-git
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build docker image
-          command: |
-            apk add --no-cache \
-              py-pip=9.0.0-r1
-            pip install \
-              docker-compose==1.12.0 \
-                awscli==1.11.76
       - restore_cache:
           keys:
-            - v1-{{ .Branch }}
-          paths:
-            - /caches/${REPO_NAME}.tar
-      - run:
-          name: Load Docker image layer cache
-          command: |
-            set +o pipefail
-            docker load -i /caches/${REPO_NAME}.tar | true
-      - run:
-          name: Build application Docker image
-          command: |
-            docker build --cache-from=${REPO_NAME} -t ${REPO_NAME} .
-      - run:
-          name: Save Docker image layer cache
-          command: |
-            mkdir -p /caches
-            docker save -o /caches/${REPO_NAME}.tar ${REPO_NAME}
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - checkout
       - save_cache:
-          key: v1-{{ .Branch }}-{{ epoch }}
+          key: source-v1-{{ .Branch }}-{{ .Revision }}
           paths:
-            - /caches/${REPO_NAME}.tar
+            - ".git"
+      - run: npm install
+      - run: npm test
+      - run: npm run build:dev
+  deploy:
+    docker:
+      - image: novemberde/node-awscli
+    working_directory: ~/repo
+    steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: source-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ".git"
+      - run: npm install
+      - run: npm test
+      - run: npm run build:dev
       - deploy:
-          name: Push application Docker image
+          name: Deploy app using serverless framework
           command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              login="$(aws ecr get-login)"
-              ${login}
-              docker tag ${REPO_NAME} "${ECR_ENDPOINT}/${REPO_NAME}"
-              docker push "${ECR_ENDPOINT}/${REPO_NAME}"
-              # docker tag app "${ECR_ENDPOINT}/${REPO_NAME}:${CIRCLE_SHA1}"
-              # docker push "${ECR_ENDPOINT}/${REPO_NAME}:${CIRCLE_SHA1}"
-            fi
-      # - run: npm install
-      # - run: npm test
-      # Deploy app
-      # - run: npx serverless deploy
+            npm run deploy
 workflows:
   version: 2
-  build-test:
+  build-workflow:
     jobs:
-      - test
       - build:
+          filters:
+            tags:
+              ignore: /^testing-.*/
+      - hold:
+          type: approval
           requires:
-            - test
+           - build
+      - deploy:
+          requires:
+            - deploy
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      
