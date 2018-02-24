@@ -9,7 +9,8 @@
     "build:dev": "node scripts/build.js",
     "build:test": "webpack --config config/webpack.config.test.js",
     "build:dockerImage": "webpack --config config/webpack.config.dev.js",
-    "start:devServer": "nodemon bin/main.js --watch bin"
+    "start:devServer": "nodemon bin/main.js --watch bin",
+    "deploy": "serverless deploy"
   },
   "devDependencies": {
     "@types/aws-lambda": "0.0.22",
